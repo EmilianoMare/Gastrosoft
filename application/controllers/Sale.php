@@ -632,7 +632,6 @@ class Sale extends Cl_Controller {
 
         //////////////////////////////////
         foreach ($food_menu_id as $value) {
-            $data1['food_menu_id'] = $value;
             $data1['sales_id'] = $sales_id;
             $data1['menu_name'] = $menu_name[$i];
             $data1['price'] = $price[$i];
@@ -642,18 +641,29 @@ class Sale extends Cl_Controller {
             $data1['user_id'] = $this->session->userdata('user_id');
             $data1['outlet_id'] = $this->session->userdata('outlet_id');
             $data1['cooking_status'] = 'New';
+
+            if (strpos($value, 'manual_') === 0) {
+                $data1['food_menu_id'] = NULL;
+                $data1['is_manual_item'] = 'Yes';
+            } else {
+                $data1['food_menu_id'] = $value;
+                $data1['is_manual_item'] = 'No';
+            }
+
             $this->db->insert('tbl_sales_details', $data1);
             //////////////////////
 
-            $ingredlist = $this->Sale_model->getFoodMenuIngredients($value);
-            foreach ($ingredlist as $inrow) {
-                $data3 = array();
-                $data3['sale_consumption_id'] = $sale_consumption_id;
-                $data3['ingredient_id'] = $inrow->ingredient_id;
-                $data3['consumption'] = $inrow->consumption * $qty[$i];
-                $data3['user_id'] = $this->session->userdata('user_id');
-                $data3['outlet_id'] = $this->session->userdata('outlet_id');
-                $this->db->insert('tbl_sale_consumptions_of_menus', $data3);
+            if (strpos($value, 'manual_') !== 0) {
+                $ingredlist = $this->Sale_model->getFoodMenuIngredients($value);
+                foreach ($ingredlist as $inrow) {
+                    $data3 = array();
+                    $data3['sale_consumption_id'] = $sale_consumption_id;
+                    $data3['ingredient_id'] = $inrow->ingredient_id;
+                    $data3['consumption'] = $inrow->consumption * $qty[$i];
+                    $data3['user_id'] = $this->session->userdata('user_id');
+                    $data3['outlet_id'] = $this->session->userdata('outlet_id');
+                    $this->db->insert('tbl_sale_consumptions_of_menus', $data3);
+                }
             }
             //////////////////////
             $i++;
