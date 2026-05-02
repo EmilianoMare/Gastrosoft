@@ -4636,7 +4636,8 @@ endif;
     <script src="<?php echo base_url(); ?>frequent_changing/js/new_ui_design.js"></script>
     <script type="text/javascript">
     $(document).ready(function() {
-        var currentItemData = null;
+        var barcodeBuffer = '';
+        var barcodeTimeout;
 
         $('#open_manual_item_modal').on('click', function(e) {
             e.preventDefault();
@@ -4694,9 +4695,6 @@ endif;
             }
         });
 
-        var barcodeBuffer = '';
-        var barcodeTimeout;
-
         $('#barcode_input').on('input', function() {
             clearTimeout(barcodeTimeout);
             barcodeBuffer = $(this).val();
@@ -4750,24 +4748,19 @@ endif;
         function updateModalTotal() {
             var qty = parseFloat($('#item_quantity_modal').val()) || 1;
             var price = 0;
+            var prec = typeof ir_precision !== 'undefined' ? ir_precision : 2;
 
             if ($('#use_manual_price').is(':checked')) {
                 price = parseFloat($('#item_manual_price_modal').val()) || 0;
-                $('#modal_item_price').html(price.toFixed(ir_precision));
-                $('#modal_item_price_variable').html((price * qty).toFixed(ir_precision));
-                $('#modal_item_price_variable_without_discount').html((price * qty).toFixed(ir_precision));
-            } else if (currentItemData) {
-                price = parseFloat(currentItemData.price) || 0;
-                $('#modal_item_price').html(price.toFixed(ir_precision));
-                $('#modal_item_price_variable').html((price * qty).toFixed(ir_precision));
-                $('#modal_item_price_variable_without_discount').html((price * qty).toFixed(ir_precision));
+            } else {
+                var modalPrice = parseFloat($('#modal_item_price').html()) || 0;
+                price = modalPrice;
             }
 
-            $('#modal_total_price').text((price * qty).toFixed(2));
-        }
-
-            var total = qty * price;
-            $('#modal_total_price').text(total.toFixed(2));
+            $('#modal_item_price').html(price.toFixed(prec));
+            $('#modal_item_price_variable').html((price * qty).toFixed(prec));
+            $('#modal_item_price_variable_without_discount').html((price * qty).toFixed(prec));
+            $('#modal_total_price').text((price * qty).toFixed(prec));
         }
 
         $('#item_quantity_modal, #item_manual_price_modal').on('input', function() {
@@ -4776,10 +4769,7 @@ endif;
 
         $('#use_manual_price').on('change', function() {
             if ($(this).is(':checked')) {
-                $('#item_manual_price_modal').prop('disabled', false);
-                if (currentItemData) {
-                    $('#item_manual_price_modal').val(currentItemData.price);
-                }
+                $('#item_manual_price_modal').prop('disabled', false).focus();
             } else {
                 $('#item_manual_price_modal').prop('disabled', true).val('');
             }
@@ -4793,19 +4783,8 @@ endif;
                 $('#manual_price_section').show();
                 $('#use_manual_price').prop('checked', false);
                 $('#item_manual_price_modal').prop('disabled', true).val('');
-                currentItemData = window.currentModalItem || null;
                 updateModalTotal();
             }, 100);
-        });
-
-        $('#add_to_cart').on('click', function() {
-            if (currentItemData && $('#use_manual_price').is(':checked')) {
-                var manualPrice = parseFloat($('#item_manual_price_modal').val());
-                if (!isNaN(manualPrice) && manualPrice > 0) {
-                    currentItemData.manual_price = manualPrice;
-                    currentItemData.total = manualPrice * (parseFloat($('#item_quantity_modal').val()) || 1);
-                }
-            }
         });
     });
     </script>
