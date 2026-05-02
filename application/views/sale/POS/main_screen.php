@@ -4750,9 +4750,18 @@ endif;
 
             if ($('#use_manual_price').is(':checked')) {
                 price = parseFloat($('#item_manual_price_modal').val()) || 0;
+                $('#modal_item_price').html(price.toFixed(ir_precision));
+                $('#modal_item_price_variable').html((price * qty).toFixed(ir_precision));
+                $('#modal_item_price_variable_without_discount').html((price * qty).toFixed(ir_precision));
             } else if (currentItemData) {
                 price = parseFloat(currentItemData.price) || 0;
+                $('#modal_item_price').html(price.toFixed(ir_precision));
+                $('#modal_item_price_variable').html((price * qty).toFixed(ir_precision));
+                $('#modal_item_price_variable_without_discount').html((price * qty).toFixed(ir_precision));
             }
+
+            $('#modal_total_price').text((price * qty).toFixed(2));
+        }
 
             var total = qty * price;
             $('#modal_total_price').text(total.toFixed(2));
