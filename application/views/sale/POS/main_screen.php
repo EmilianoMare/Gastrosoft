@@ -1922,13 +1922,16 @@ foreach ($notifications as $single_notification){
 
                 </div>
                 <div class="section1 fix v_h_middle" id="manual_price_section" style="display:none;">
-                    <div class="sec1_inside" id="sec1_1"><?php echo lang('manual_price'); ?></div>
-                    <div class="sec1_inside" id="sec1_2">
-                        <input onfocus="select();" type="text" id="item_manual_price_modal" placeholder="<?php echo lang('override_price'); ?>" class="numpad_input_">
+                    <div class="sec1_inside" id="sec1_1">
+                        <label for="use_manual_price" style="cursor:pointer;white-space:nowrap;">
+                            <input type="checkbox" id="use_manual_price" style="margin-right:6px;vertical-align:middle;">
+                            <span style="font-weight:600;"><?php echo lang('use_manual_price'); ?></span>
+                        </label>
                     </div>
-                    <div class="sec1_inside" id="sec1_3">
-                        <label><input type="checkbox" id="use_manual_price"> <?php echo lang('use_manual_price'); ?></label>
+                    <div class="sec1_inside" id="sec1_2" style="flex:1;">
+                        <input onfocus="select();" type="text" id="item_manual_price_modal" placeholder="<?php echo lang('override_price'); ?>" class="numpad_input_" style="width:100%;">
                     </div>
+                    <div class="sec1_inside" id="sec1_3"></div>
                 </div>
 
                 <div class="modifier_div section2 fix">
