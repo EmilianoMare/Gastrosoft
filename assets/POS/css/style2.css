@@ -2963,16 +2963,19 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
 
   /* --- All Modals Responsive --- */
   .modal {
+    display: none;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
     max-width: 100% !important;
-    transform: none !important;
     border-radius: 0 !important;
     overflow-y: auto;
     z-index: 9999;
+  }
+  .modal.active {
+    display: block;
   }
   .modal .modal-content {
     width: 100% !important;
@@ -3236,16 +3239,19 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
 
   /* --- cus_pos_modal (register, reservation, etc.) --- */
   .cus_pos_modal {
+    display: none;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     height: 100% !important;
-    transform: none !important;
     border-radius: 0 !important;
     overflow-y: auto;
     z-index: 9999;
+  }
+  .cus_pos_modal.active {
+    display: block;
   }
   .cus_pos_modal .pos__modal__body .default_inner_body {
     height: auto !important;

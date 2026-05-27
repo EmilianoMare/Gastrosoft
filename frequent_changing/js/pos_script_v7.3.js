@@ -16874,7 +16874,9 @@
     });
   
     setTimeout(function () {
-      $("#show_tables_modal2").show();
+      if ($(window).width() >= 768) {
+        $("#show_tables_modal2").show();
+      }
     }, 1000);
     /**
      * All Script For All Mobile Devices
