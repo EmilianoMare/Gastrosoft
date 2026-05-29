@@ -15150,6 +15150,9 @@
     $(".show_all_menu").on("click", function () {
       $(".all__menus").slideToggle(333);
     });
+    $(".all__menus__close").on("click", function () {
+      $(".all__menus").slideUp(333);
+    });
     // $(window).click(function (event) {
     //   if ($(event.target).closest("#show_all_menu").length === 0) {
     //     $(".all__menus").slideUp(333);

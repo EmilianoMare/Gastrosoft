@@ -1369,6 +1369,10 @@ foreach ($notifications as $single_notification){
     </div>
     <!-- Responsive mobile menu -->
     <div class="all__menus">
+        <div class="all__menus__header">
+            <span><?php echo lang('Others'); ?></span>
+            <a href="javascript:void(0)" class="all__menus__close"><i class="fal fa-times"></i></a>
+        </div>
         <ul class="menu__list">
             <div>
                 <li>
