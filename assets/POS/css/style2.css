@@ -3020,9 +3020,19 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
     border-radius: 0 !important;
     overflow-y: auto;
     z-index: 9999;
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
   }
   .modal.active {
+    animation: none !important;
     display: block;
+  }
+  .modal.inActive {
+    animation: none !important;
+  }
+  #cart_item_option_modal {
+    max-width: 100% !important;
   }
   .modal .modal-content {
     width: 100% !important;
@@ -3447,9 +3457,16 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
     border-radius: 0 !important;
     overflow-y: auto;
     z-index: 9999;
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
   }
   .cus_pos_modal.active {
+    animation: none !important;
     display: block;
+  }
+  .cus_pos_modal.inActive {
+    animation: none !important;
   }
   .cus_pos_modal .pos__modal__body .default_inner_body {
     height: auto !important;
