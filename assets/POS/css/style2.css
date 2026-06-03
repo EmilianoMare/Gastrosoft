@@ -863,6 +863,10 @@ button[data-selected="unselected"] {
   background-color: #dadada;
   /* font-weight: 500; */
 }
+#show_tables_modal2 .select_table_modal_info_holder2 .width_86 {
+  flex: 1;
+  min-width: 0;
+}
 #show_tables_modal2 .select_table_modal_info_holder2 .all-dineIn-table {
   flex: 1;
   position: relative;
@@ -3267,31 +3271,85 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
     flex-direction: column;
     overflow: hidden;
   }
+  #show_tables_modal2 .modal-content h1 {
+    font-size: 16px;
+    padding: 8px 12px;
+    margin: 0;
+    flex-shrink: 0;
+  }
   #show_tables_modal2 .select_table_modal_info_holder2 {
     flex: 1;
     overflow-y: auto;
     flex-direction: column;
     min-height: 0;
   }
+  #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list {
+    padding: 6px 8px !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+  }
+  #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list h4 {
+    display: none;
+  }
   #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list .dineIn-table-list-of-item {
-    width: 100% !important;
+    width: auto !important;
     height: auto !important;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    padding: 8px;
+    padding: 0;
+    flex: 1;
   }
   #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list .dineIn-table-list-of-item li {
     margin-bottom: 0;
   }
+  #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list .dineIn-table-list-of-item li a {
+    padding: 4px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 14px;
+    background-color: #f0f0f0;
+    color: #555;
+    font-weight: 500;
+  }
+  #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list .dineIn-table-list-of-item li a:focus {
+    background-color: #dadada;
+  }
+  #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list table {
+    display: none;
+  }
+  #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list p {
+    display: none;
+  }
+  #show_tables_modal2 .select_table_modal_info_holder2 .width_86 {
+    width: 100% !important;
+    flex: 1;
+    min-height: 0;
+  }
   #show_tables_modal2 .select_table_modal_info_holder2 .all-dineIn-table {
-    height: auto !important;
+    height: 100% !important;
+    min-height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    margin-left: 0 !important;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 8px;
-    padding: 8px;
+  }
+  #show_tables_modal2 .select_table_modal_info_holder2 .all-dineIn-table .div_box {
+    transform: scale(0.85);
+    transform-origin: top left;
   }
   #show_tables_modal2 .bottom_button_holder_table_modal {
     flex-shrink: 0;
+    padding: 8px 12px;
+  }
+  #show_tables_modal2 .bottom_button_holder_table_modal button {
+    font-size: 13px;
+    padding: 8px 16px;
+    height: auto;
   }
 
   /* Hold Sale / Last Ten Sales Modals */
