@@ -3152,7 +3152,7 @@
         $("#calculator_main").fadeOut(333);
         $(".overlayForCalculator").fadeOut(111);
         $(".main_left").removeClass("active");
-        if ($("show_running_order").attr("data-isActive") === "false") {
+        if ($(".show_running_order").attr("data-isActive") === "false") {
           $(".show_running_order").attr("data-isActive", "true");
         } else {
           $(".show_running_order").attr("data-isActive", "false");

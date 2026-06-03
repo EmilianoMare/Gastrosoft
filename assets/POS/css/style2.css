@@ -2968,6 +2968,7 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
     background: white;
   }
   #main_part .left_item .main_left.active {
+    z-index: 9999;
     transform: translateX(0);
   }
   #main_part .left_item .main_left .holder {
