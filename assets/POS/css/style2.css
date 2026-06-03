@@ -2615,10 +2615,12 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
   #show_tables_modal2 .select_table_modal_info_holder2 {
     flex: 1;
     overflow-y: auto;
+    min-height: 0;
   }
 
   #bottom_absolute .bottom__info .main_bottom .button_group {
@@ -3254,8 +3256,22 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
   }
 
   /* Table Modal */
-  #show_tables_modal2 .select_table_modal_info_holder2 {
+  #show_tables_modal2 {
+    height: 100% !important;
+    top: 0 !important;
+    padding-bottom: 0;
+  }
+  #show_tables_modal2 .modal-content {
+    height: 100dvh;
+    display: flex;
     flex-direction: column;
+    overflow: hidden;
+  }
+  #show_tables_modal2 .select_table_modal_info_holder2 {
+    flex: 1;
+    overflow-y: auto;
+    flex-direction: column;
+    min-height: 0;
   }
   #show_tables_modal2 .select_table_modal_info_holder2 .table-category-list .dineIn-table-list-of-item {
     width: 100% !important;
@@ -3273,6 +3289,9 @@ aside#pos__sidebar .sub__sub__menu__list li a i {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 8px;
     padding: 8px;
+  }
+  #show_tables_modal2 .bottom_button_holder_table_modal {
+    flex-shrink: 0;
   }
 
   /* Hold Sale / Last Ten Sales Modals */
