@@ -1305,6 +1305,9 @@ foreach ($notifications as $single_notification){
                             <input class="" type="text" name="search" id="search"
                                     placeholder="<?php echo lang('name_code_cat_veg_bev_bar'); ?>" /></div>
                         <div class="item">
+                            <input class="" type="text" name="barcode" id="barcode_input"
+                                    placeholder="<?php echo lang('scan_barcode'); ?>" style="margin-left:5px;" /></div>
+                        <div class="item">
                                 <select id="select_restaurant" class="select2 select_restaurant ir_w_100">
                                     <?php
                                     $outlet_id_s = $this->session->userdata('outlet_id');
@@ -1321,6 +1324,8 @@ foreach ($notifications as $single_notification){
                     <?php else:   ?>
                         <input class="ir_w_m_b_4" type="text" name="search" id="search"
                                placeholder="<?php echo lang('name_code_cat_veg_bev_bar'); ?>" />
+                        <input class="ir_w_m_b_4" type="text" name="barcode" id="barcode_input"
+                               placeholder="<?php echo lang('scan_barcode'); ?>" style="margin-left:5px;" />
                     <?php endif;   ?>
                     <div class="cat-list-wrapper">
                         <button type="button" class="bg__purple open-category-list">
@@ -1364,6 +1369,10 @@ foreach ($notifications as $single_notification){
     </div>
     <!-- Responsive mobile menu -->
     <div class="all__menus">
+        <div class="all__menus__header">
+            <span><?php echo lang('Others'); ?></span>
+            <a href="javascript:void(0)" class="all__menus__close"><i class="fal fa-times"></i></a>
+        </div>
         <ul class="menu__list">
             <div>
                 <li>
@@ -1911,10 +1920,22 @@ foreach ($notifications as $single_notification){
                         <input onfocus="select();" type="text" id="item_quantity_modal" value="1"> <i class="fal fa-plus" id="increase_item_modal"></i>
                     </div>
                     <div class="sec1_inside" id="sec1_3"> <span id="modal_item_price_variable"
-                                                                class="ir_display_none">0</span><span
+                                                                 class="ir_display_none">0</span><span
                                 id="modal_item_price_variable_without_discount">0</span><span id="modal_discount_amount"
-                                                                                              class="ir_display_none">0</span></div>
+                                                                                               class="ir_display_none">0</span></div>
 
+                </div>
+                <div class="section1 fix v_h_middle" id="manual_price_section" style="display:none;">
+                    <div class="sec1_inside" id="sec1_1">
+                        <label for="use_manual_price" style="cursor:pointer;white-space:nowrap;">
+                            <input type="checkbox" id="use_manual_price" style="margin-right:6px;vertical-align:middle;">
+                            <span style="font-weight:600;"><?php echo lang('use_manual_price'); ?></span>
+                        </label>
+                    </div>
+                    <div class="sec1_inside" id="sec1_2" style="flex:1;">
+                        <input onfocus="select();" type="text" id="item_manual_price_modal" placeholder="<?php echo lang('override_price'); ?>" class="numpad_input_" style="width:100%;">
+                    </div>
+                    <div class="sec1_inside" id="sec1_3"></div>
                 </div>
 
                 <div class="modifier_div section2 fix">
@@ -2119,6 +2140,7 @@ foreach ($notifications as $single_notification){
                             <tr class="no-need-for-waiter"> <td><button data-id="55" class="set_quick_action"><i class="fas fa-code-branch"></i> <?php echo lang('merge_table'); ?></button></td> </tr>
                             <tr class="no-need-for-waiter"> <td><button data-id="4" class="set_quick_action"><i class="fas fa-file-invoice"></i> <?php echo lang('bill'); ?></button></td> </tr>
                             <tr class="no-need-for-waiter"> <td><button data-id="5" class="set_quick_action"><i class="fas fa-times"></i> <?php echo lang('cancel_order'); ?></button></td> </tr>
+                            <tr class=""> <td><button id="open_manual_item_modal" class="set_quick_action"><i class="fas fa-balance-scale"></i> <?php echo lang('add_manual_item'); ?></button></td> </tr>
                         </table>
 
 
@@ -3565,8 +3587,33 @@ foreach ($notifications as $single_notification){
         </div>
 
     </div>
-    <!-- end of notification list modal -->
+    <!-- Manual Item Modal -->
+    <div id="manual_item_modal" class="modal">
+        <div class="modal-content">
+            <h1 class="main_header fix"><?php echo lang('add_manual_item'); ?> <a href="javascript:void(0)" class="alertCloseIcon"><i class="fal fa-times"></i></a></h1>
+            <div class="modal_modifiers">
+                <p><?php echo lang('item_description'); ?></p>
+            </div>
+            <div class="section1 fix v_h_middle">
+                <div class="sec1_inside" id="sec1_1"><?php echo lang('description'); ?></div>
+                <div class="sec1_inside" id="sec1_2">
+                    <input type="text" id="manual_item_description" placeholder="<?php echo lang('item_description'); ?>" style="width:100%;padding:5px;">
+                </div>
+            </div>
+            <div class="section1 fix v_h_middle">
+                <div class="sec1_inside" id="sec1_1"><?php echo lang('price'); ?></div>
+                <div class="sec1_inside" id="sec1_2">
+                    <input onfocus="select();" type="text" id="manual_item_price" placeholder="<?php echo lang('price'); ?>" class="numpad_input_">
+                </div>
+            </div>
+            <div class="section7">
+                <div class="sec7_inside" id="sec7_2"><button id="add_manual_item_to_cart"><?php echo lang('add_to_cart_pos'); ?></button></div>
+                <div class="sec7_inside" id="sec7_1"><button id="close_manual_item_modal" class="bg__red"><?php echo lang('cancel'); ?></button></div>
+            </div>
+        </div>
+    </div>
 
+    <!-- end of notification list modal -->
 
     <!-- The Notification List Modal -->
     <div id="kitchen_bar_waiter_panel_button_modal" class="modal">
@@ -4589,8 +4636,162 @@ endif;
     <script src="<?php echo base_url(); ?>frequent_changing/js/dataTable/pdfmake.min.js"></script>
     <script src="<?php echo base_url(); ?>frequent_changing/js/dataTable/vfs_fonts.js"></script>
     <script src="<?php echo base_url(); ?>frequent_changing/newDesign/js/forTable.js"></script>
-    <script src="<?php echo base_url(); ?>frequent_changing/js/register_details.js"></script>   
-    <script src="<?php echo base_url(); ?>frequent_changing/js/new_ui_design.js"></script>   
+    <script src="<?php echo base_url(); ?>frequent_changing/js/register_details.js"></script>
+    <script src="<?php echo base_url(); ?>frequent_changing/js/new_ui_design.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        var barcodeBuffer = '';
+        var barcodeTimeout;
+
+        $('#open_manual_item_modal').on('click', function(e) {
+            e.preventDefault();
+            $('#manual_item_description').val('');
+            $('#manual_item_price').val('');
+            $('#manual_item_modal').show();
+        });
+
+        $('#close_manual_item_modal, #manual_item_modal .alertCloseIcon').on('click', function() {
+            $('#manual_item_modal').hide();
+        });
+
+        $('#add_manual_item_to_cart').on('click', function() {
+            var description = $('#manual_item_description').val().trim();
+            var price = parseFloat($('#manual_item_price').val());
+
+            if (!description) {
+                swal('Error', '<?php echo lang("item_description_required"); ?>', 'error');
+                return;
+            }
+            if (isNaN(price) || price <= 0) {
+                swal('Error', '<?php echo lang("valid_price_required"); ?>', 'error');
+                return;
+            }
+
+            var manualItem = {
+                item_id: 'manual_' + Date.now(),
+                item_name: description,
+                price: price,
+                qty: 1,
+                discount_amount: 0,
+                total: price,
+                is_manual: true,
+                item_code: 'MANUAL'
+            };
+
+            if (typeof addItemToCart === 'function') {
+                addItemToCart(manualItem);
+            } else {
+                window.itemsToAdd = window.itemsToAdd || [];
+                window.itemsToAdd.push(manualItem);
+                if (typeof refreshCart === 'function') {
+                    refreshCart();
+                }
+            }
+
+            $('#manual_item_modal').hide();
+            $('#manual_item_description').val('');
+            $('#manual_item_price').val('');
+        });
+
+        $(window).on('click', function(e) {
+            if ($(e.target).is('#manual_item_modal')) {
+                $('#manual_item_modal').hide();
+            }
+        });
+
+        $('#barcode_input').on('input', function() {
+            clearTimeout(barcodeTimeout);
+            barcodeBuffer = $(this).val();
+
+            barcodeTimeout = setTimeout(function() {
+                if (barcodeBuffer.length > 3) {
+                    processBarcode(barcodeBuffer);
+                    $('#barcode_input').val('');
+                    barcodeBuffer = '';
+                }
+            }, 300);
+        });
+
+        $('#barcode_input').on('keypress', function(e) {
+            if (e.which === 13) {
+                if (barcodeBuffer.length > 3) {
+                    processBarcode(barcodeBuffer);
+                    $('#barcode_input').val('');
+                    barcodeBuffer = '';
+                }
+            }
+        });
+
+        function processBarcode(code) {
+            if (typeof window.items !== 'undefined') {
+                var found = null;
+                for (var i = 0; i < window.items.length; i++) {
+                    if (window.items[i].item_code === code.trim()) {
+                        found = window.items[i];
+                        break;
+                    }
+                }
+
+                if (found) {
+                    if (typeof addItemToCart === 'function') {
+                        addItemToCart(found);
+                    } else {
+                        window.itemsToAdd = window.itemsToAdd || [];
+                        window.itemsToAdd.push(found);
+                        if (typeof refreshCart === 'function') {
+                            refreshCart();
+                        }
+                    }
+                    swal('<?php echo lang("barcode_scan"); ?>', found.item_name + ' <?php echo lang("added_to_cart"); ?>', 'success');
+                } else {
+                    swal('Error', '<?php echo lang("item_not_found"); ?>', 'error');
+                }
+            }
+        }
+
+        function updateModalTotal() {
+            var qty = parseFloat($('#item_quantity_modal').val()) || 1;
+            var price = 0;
+            var prec = typeof ir_precision !== 'undefined' ? ir_precision : 2;
+
+            if ($('#use_manual_price').is(':checked')) {
+                price = parseFloat($('#item_manual_price_modal').val()) || 0;
+            } else {
+                var modalPrice = parseFloat($('#modal_item_price').html()) || 0;
+                price = modalPrice;
+            }
+
+            $('#modal_item_price').html(price.toFixed(prec));
+            $('#modal_item_price_variable').html((price * qty).toFixed(prec));
+            $('#modal_item_price_variable_without_discount').html((price * qty).toFixed(prec));
+            $('#modal_total_price').text((price * qty).toFixed(prec));
+        }
+
+        $('#item_quantity_modal, #item_manual_price_modal').on('input', function() {
+            updateModalTotal();
+        });
+
+        $('#use_manual_price').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#item_manual_price_modal').prop('disabled', false).focus();
+            } else {
+                $('#item_manual_price_modal').prop('disabled', true).val('');
+            }
+            updateModalTotal();
+        });
+
+        $('#item_manual_price_modal').prop('disabled', true);
+
+        $(document).on('click', '.single_item', function() {
+            setTimeout(function() {
+                $('#manual_price_section').show();
+                $('#use_manual_price').prop('checked', false);
+                $('#item_manual_price_modal').prop('disabled', true).val('');
+                updateModalTotal();
+            }, 100);
+        });
+    });
+    </script>
 </body>
 
 </html>

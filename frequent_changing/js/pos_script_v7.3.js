@@ -3152,7 +3152,7 @@
         $("#calculator_main").fadeOut(333);
         $(".overlayForCalculator").fadeOut(111);
         $(".main_left").removeClass("active");
-        if ($("show_running_order").attr("data-isActive") === "false") {
+        if ($(".show_running_order").attr("data-isActive") === "false") {
           $(".show_running_order").attr("data-isActive", "true");
         } else {
           $(".show_running_order").attr("data-isActive", "false");
@@ -15150,6 +15150,9 @@
     $(".show_all_menu").on("click", function () {
       $(".all__menus").slideToggle(333);
     });
+    $(".all__menus__close").on("click", function () {
+      $(".all__menus").slideUp(333);
+    });
     // $(window).click(function (event) {
     //   if ($(event.target).closest("#show_all_menu").length === 0) {
     //     $(".all__menus").slideUp(333);
@@ -16874,7 +16877,9 @@
     });
   
     setTimeout(function () {
-      $("#show_tables_modal2").show();
+      if ($(window).width() >= 768) {
+        $("#show_tables_modal2").show();
+      }
     }, 1000);
     /**
      * All Script For All Mobile Devices

@@ -632,7 +632,6 @@ class Sale extends Cl_Controller {
 
         //////////////////////////////////
         foreach ($food_menu_id as $value) {
-            $data1['food_menu_id'] = $value;
             $data1['sales_id'] = $sales_id;
             $data1['menu_name'] = $menu_name[$i];
             $data1['price'] = $price[$i];
@@ -642,18 +641,29 @@ class Sale extends Cl_Controller {
             $data1['user_id'] = $this->session->userdata('user_id');
             $data1['outlet_id'] = $this->session->userdata('outlet_id');
             $data1['cooking_status'] = 'New';
+
+            if (strpos($value, 'manual_') === 0) {
+                $data1['food_menu_id'] = NULL;
+                $data1['is_manual_item'] = 'Yes';
+            } else {
+                $data1['food_menu_id'] = $value;
+                $data1['is_manual_item'] = 'No';
+            }
+
             $this->db->insert('tbl_sales_details', $data1);
             //////////////////////
 
-            $ingredlist = $this->Sale_model->getFoodMenuIngredients($value);
-            foreach ($ingredlist as $inrow) {
-                $data3 = array();
-                $data3['sale_consumption_id'] = $sale_consumption_id;
-                $data3['ingredient_id'] = $inrow->ingredient_id;
-                $data3['consumption'] = $inrow->consumption * $qty[$i];
-                $data3['user_id'] = $this->session->userdata('user_id');
-                $data3['outlet_id'] = $this->session->userdata('outlet_id');
-                $this->db->insert('tbl_sale_consumptions_of_menus', $data3);
+            if (strpos($value, 'manual_') !== 0) {
+                $ingredlist = $this->Sale_model->getFoodMenuIngredients($value);
+                foreach ($ingredlist as $inrow) {
+                    $data3 = array();
+                    $data3['sale_consumption_id'] = $sale_consumption_id;
+                    $data3['ingredient_id'] = $inrow->ingredient_id;
+                    $data3['consumption'] = $inrow->consumption * $qty[$i];
+                    $data3['user_id'] = $this->session->userdata('user_id');
+                    $data3['outlet_id'] = $this->session->userdata('outlet_id');
+                    $this->db->insert('tbl_sale_consumptions_of_menus', $data3);
+                }
             }
             //////////////////////
             $i++;
@@ -2166,11 +2176,23 @@ class Sale extends Cl_Controller {
                     $tmp_var = $tmp;
                 }
 
-                $food_details =  $this->Common_model->getDataById($item->food_menu_id, "tbl_food_menus");
+                $is_manual = (is_string($item->food_menu_id) && strpos($item->food_menu_id, 'manual_') === 0);
+
                 $item_data = array();
-                $item_data['food_menu_id'] = $item->food_menu_id;
-                $p_name = getParentNameOnly($food_details->parent_id);
-                $item_data['menu_name'] = isset($p_name) ? $p_name . (isset($food_details->name) && $food_details->name ? " " . $food_details->name : '') : (isset($food_details->name) && $food_details->name ? $food_details->name : '');
+
+                if ($is_manual) {
+                    $food_details = null;
+                    $item_data['food_menu_id'] = NULL;
+                    $item_data['is_manual_item'] = 'Yes';
+                    $item_data['menu_name'] = isset($item->menu_name) && $item->menu_name ? $item->menu_name : 'Manual Item';
+                } else {
+                    $food_details =  $this->Common_model->getDataById($item->food_menu_id, "tbl_food_menus");
+                    $item_data['food_menu_id'] = $item->food_menu_id;
+                    $item_data['is_manual_item'] = 'No';
+                    $p_name = getParentNameOnly($food_details->parent_id);
+                    $item_data['menu_name'] = isset($p_name) ? $p_name . (isset($food_details->name) && $food_details->name ? " " . $food_details->name : '') : (isset($food_details->name) && $food_details->name ? $food_details->name : '');
+                }
+
                 $item_data['qty'] = $item->qty;
                 $item_data['tmp_qty'] = $tmp_var;
                 $item_data['menu_price_without_discount'] = $item->menu_price_without_discount;
@@ -2184,7 +2206,12 @@ class Sale extends Cl_Controller {
                 $item_data['menu_note'] = isset($item->item_note) && $item->item_note?$item->item_note:'';
                 $item_data['discount_reason'] = isset($item->discount_reason) && $item->discount_reason?$item->discount_reason:'';
                 $item_data['discount_amount'] = $item->item_discount_amount;
-                $item_data['item_type'] = ($this->Sale_model->getItemType($item->food_menu_id)->item_type=="Bar No")?"Kitchen Item":"Bar Item";
+
+                if ($is_manual) {
+                    $item_data['item_type'] = 'Kitchen Item';
+                } else {
+                    $item_data['item_type'] = ($this->Sale_model->getItemType($item->food_menu_id)->item_type=="Bar No")?"Kitchen Item":"Bar Item";
+                }
                 $item_data['cooking_status'] = ($item->item_cooking_status=="")?NULL:$item->item_cooking_status;
                 
                 if(isset($select_kitchen_row->id) && $select_kitchen_row->id){
@@ -2200,7 +2227,7 @@ class Sale extends Cl_Controller {
                 $item_data['sales_id'] = $sales_id;
                 $item_data['user_id'] = $this->session->userdata('user_id');
                 $item_data['outlet_id'] = $this->session->userdata('outlet_id');
-                if($order_details->customer_id!=1){
+                if(!$is_manual && $order_details->customer_id!=1){
                     $item_data['loyalty_point_earn'] = ($item->qty * getLoyaltyPointByFoodMenu($item->food_menu_id,''));
                 }
 
@@ -2214,102 +2241,103 @@ class Sale extends Cl_Controller {
                     $this->db->update('tbl_sales_details', $previous_id_update_array);
                 }
 
-                if(isset($food_details->product_type) && $food_details->product_type==1){
-                    $food_menu_ingredients = $this->db->query("SELECT * FROM tbl_food_menus_ingredients WHERE food_menu_id=$item->food_menu_id")->result();
-                    foreach($food_menu_ingredients as $single_ingredient){
-                        $inline_total = $single_ingredient->cost;
-                        $data_sale_consumptions_detail = array();
-                        $data_sale_consumptions_detail['ingredient_id'] = $single_ingredient->ingredient_id;
-                        $data_sale_consumptions_detail['consumption'] = $item->qty*$single_ingredient->consumption;
-                        $data_sale_consumptions_detail['sale_consumption_id'] = $sale_consumption_id;
-                        $data_sale_consumptions_detail['sales_id'] = $sales_id;
-                        $data_sale_consumptions_detail['cost'] = $inline_total;
-                        $data_sale_consumptions_detail['food_menu_id'] = $item->food_menu_id;
-                        $data_sale_consumptions_detail['user_id'] = $this->session->userdata('outlet_id');
-                        $data_sale_consumptions_detail['outlet_id'] = $this->session->userdata('outlet_id');
-                        $data_sale_consumptions_detail['del_status'] = 'Live';
-                        $query = $this->db->insert('tbl_sale_consumptions_of_menus',$data_sale_consumptions_detail);
-                    }
-                }else if(isset($food_details->product_type) && $food_details->product_type==3){
-                    $food_menu_ingredients = $this->db->query("SELECT * FROM tbl_ingredients WHERE food_id=$item->food_menu_id")->result();
-                    foreach($food_menu_ingredients as $single_ingredient){
-                        $inline_total = $single_ingredient->consumption_unit_cost;
-                        $data_sale_consumptions_detail = array();
-                        $data_sale_consumptions_detail['ingredient_id'] = $single_ingredient->id;
-                        $data_sale_consumptions_detail['consumption'] = $item->qty;
-                        $data_sale_consumptions_detail['sale_consumption_id'] = $sale_consumption_id;
-                        $data_sale_consumptions_detail['sales_id'] = $sales_id;
-                        $data_sale_consumptions_detail['cost'] = $inline_total;
-                        $data_sale_consumptions_detail['food_menu_id'] = $item->food_menu_id;
-                        $data_sale_consumptions_detail['user_id'] = $this->session->userdata('outlet_id');
-                        $data_sale_consumptions_detail['outlet_id'] = $this->session->userdata('outlet_id');
-                        $data_sale_consumptions_detail['del_status'] = 'Live';
-                         $this->db->insert('tbl_sale_consumptions_of_menus',$data_sale_consumptions_detail);
-                    }
-                }else{
-                    $combo_food_menus = $this->db->query("SELECT * FROM tbl_combo_food_menus WHERE food_menu_id=$item->food_menu_id AND del_status='Live'")->result();
-                    if(isset($combo_food_menus) && $combo_food_menus){
-                        foreach ($combo_food_menus as $single_combo_fm){
-                            $food_menu_ingredients = $this->db->query("SELECT * FROM tbl_food_menus_ingredients WHERE food_menu_id=$single_combo_fm->added_food_menu_id")->result();
-                            foreach($food_menu_ingredients as $single_ingredient){
-                                $inline_total = $single_ingredient->cost*($item->qty*$single_combo_fm->quantity);
-                                $data_sale_consumptions_detail = array();
-                                $data_sale_consumptions_detail['ingredient_id'] = $single_ingredient->ingredient_id;
-                                $data_sale_consumptions_detail['consumption'] = ($item->qty*$single_combo_fm->quantity)*$single_ingredient->consumption;
-                                $data_sale_consumptions_detail['sale_consumption_id'] = $sale_consumption_id;
-                                $data_sale_consumptions_detail['sales_id'] = $sales_id;
-                                $data_sale_consumptions_detail['cost'] = $inline_total;
-                                $data_sale_consumptions_detail['food_menu_id'] = $item->food_menu_id;
-                                $data_sale_consumptions_detail['user_id'] = $this->session->userdata('outlet_id');
-                                $data_sale_consumptions_detail['outlet_id'] = $this->session->userdata('outlet_id');
-                                $data_sale_consumptions_detail['del_status'] = 'Live';
-                                $this->db->insert('tbl_sale_consumptions_of_menus',$data_sale_consumptions_detail);
-                            }
-                        }
-
-                    }
-                }
-
-
-
-                $modifier_id_array = isset($item->modifiers_id) && ($item->modifiers_id!="")?explode(",",$item->modifiers_id):null;
-                /*new_added_zak*/
-                $modifiers_mul_id_array = isset($item->modifiers_mul_id) && ($item->modifiers_mul_id!="")?explode(",",$item->modifiers_mul_id):null;
-                /*end_new_added_zak*/
-                $modifier_price_array = isset($item->modifiers_price) && ($item->modifiers_price!="")?explode(",",$item->modifiers_price):null;
-                $modifier_vat_array = (isset($item->modifier_vat) && $item->modifier_vat!="")?explode("|||",$item->modifier_vat):null;
-                if(!empty($modifier_id_array)>0){
-                    $i = 0;
-                    foreach($modifier_id_array as $key1=>$single_modifier_id){
-                        $modifiers_mul_id_array_value = isset($modifiers_mul_id_array[$key1]) && $modifiers_mul_id_array[$key1]?explode('_',$modifiers_mul_id_array[$key1]):'';
-
-                        $modifier_data = array();
-                        $modifier_data['modifier_id'] =$single_modifier_id;
-                        $modifier_data['modifier_price'] = $modifier_price_array[$i];
-                        $modifier_data['food_menu_id'] = $item->food_menu_id;
-                        $modifier_data['sales_id'] = $sales_id;
-                        $modifier_data['sales_details_id'] = $sales_details_id;
-                        $modifier_data['menu_taxes'] = isset($modifier_vat_array[$key1]) && $modifier_vat_array[$key1]?$modifier_vat_array[$key1]:'';
-                        $modifier_data['user_id'] = $this->session->userdata('user_id');
-                        $modifier_data['outlet_id'] = $this->session->userdata('outlet_id');
-                        $modifier_data['customer_id'] =$order_details->customer_id;
-                        $this->db->insert('tbl_sales_details_modifiers', $modifier_data);
-
-                        $modifier_ingredients = $this->db->query("SELECT * FROM tbl_modifier_ingredients WHERE modifier_id=$single_modifier_id")->result();
-
-                        foreach($modifier_ingredients as $single_ingredient){
+                if(!$is_manual){
+                    if(isset($food_details->product_type) && $food_details->product_type==1){
+                        $food_menu_ingredients = $this->db->query("SELECT * FROM tbl_food_menus_ingredients WHERE food_menu_id=$item->food_menu_id")->result();
+                        foreach($food_menu_ingredients as $single_ingredient){
+                            $inline_total = $single_ingredient->cost;
                             $data_sale_consumptions_detail = array();
                             $data_sale_consumptions_detail['ingredient_id'] = $single_ingredient->ingredient_id;
                             $data_sale_consumptions_detail['consumption'] = $item->qty*$single_ingredient->consumption;
                             $data_sale_consumptions_detail['sale_consumption_id'] = $sale_consumption_id;
                             $data_sale_consumptions_detail['sales_id'] = $sales_id;
+                            $data_sale_consumptions_detail['cost'] = $inline_total;
                             $data_sale_consumptions_detail['food_menu_id'] = $item->food_menu_id;
-                            $data_sale_consumptions_detail['user_id'] = $this->session->userdata('user_id');
+                            $data_sale_consumptions_detail['user_id'] = $this->session->userdata('outlet_id');
                             $data_sale_consumptions_detail['outlet_id'] = $this->session->userdata('outlet_id');
                             $data_sale_consumptions_detail['del_status'] = 'Live';
-                            $this->db->insert('tbl_sale_consumptions_of_modifiers_of_menus',$data_sale_consumptions_detail);
+                            $query = $this->db->insert('tbl_sale_consumptions_of_menus',$data_sale_consumptions_detail);
                         }
-                        $i++;
+                    }else if(isset($food_details->product_type) && $food_details->product_type==3){
+                        $food_menu_ingredients = $this->db->query("SELECT * FROM tbl_ingredients WHERE food_id=$item->food_menu_id")->result();
+                        foreach($food_menu_ingredients as $single_ingredient){
+                            $inline_total = $single_ingredient->consumption_unit_cost;
+                            $data_sale_consumptions_detail = array();
+                            $data_sale_consumptions_detail['ingredient_id'] = $single_ingredient->id;
+                            $data_sale_consumptions_detail['consumption'] = $item->qty;
+                            $data_sale_consumptions_detail['sale_consumption_id'] = $sale_consumption_id;
+                            $data_sale_consumptions_detail['sales_id'] = $sales_id;
+                            $data_sale_consumptions_detail['cost'] = $inline_total;
+                            $data_sale_consumptions_detail['food_menu_id'] = $item->food_menu_id;
+                            $data_sale_consumptions_detail['user_id'] = $this->session->userdata('outlet_id');
+                            $data_sale_consumptions_detail['outlet_id'] = $this->session->userdata('outlet_id');
+                            $data_sale_consumptions_detail['del_status'] = 'Live';
+                            $this->db->insert('tbl_sale_consumptions_of_menus',$data_sale_consumptions_detail);
+                        }
+                    }else{
+                        $combo_food_menus = $this->db->query("SELECT * FROM tbl_combo_food_menus WHERE food_menu_id=$item->food_menu_id AND del_status='Live'")->result();
+                        if(isset($combo_food_menus) && $combo_food_menus){
+                            foreach ($combo_food_menus as $single_combo_fm){
+                                $food_menu_ingredients = $this->db->query("SELECT * FROM tbl_food_menus_ingredients WHERE food_menu_id=$single_combo_fm->added_food_menu_id")->result();
+                                foreach($food_menu_ingredients as $single_ingredient){
+                                    $inline_total = $single_ingredient->cost*($item->qty*$single_combo_fm->quantity);
+                                    $data_sale_consumptions_detail = array();
+                                    $data_sale_consumptions_detail['ingredient_id'] = $single_ingredient->ingredient_id;
+                                    $data_sale_consumptions_detail['consumption'] = ($item->qty*$single_combo_fm->quantity)*$single_ingredient->consumption;
+                                    $data_sale_consumptions_detail['sale_consumption_id'] = $sale_consumption_id;
+                                    $data_sale_consumptions_detail['sales_id'] = $sales_id;
+                                    $data_sale_consumptions_detail['cost'] = $inline_total;
+                                    $data_sale_consumptions_detail['food_menu_id'] = $item->food_menu_id;
+                                    $data_sale_consumptions_detail['user_id'] = $this->session->userdata('outlet_id');
+                                    $data_sale_consumptions_detail['outlet_id'] = $this->session->userdata('outlet_id');
+                                    $data_sale_consumptions_detail['del_status'] = 'Live';
+                                    $this->db->insert('tbl_sale_consumptions_of_menus',$data_sale_consumptions_detail);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if(!$is_manual){
+                    $modifier_id_array = isset($item->modifiers_id) && ($item->modifiers_id!="")?explode(",",$item->modifiers_id):null;
+                    /*new_added_zak*/
+                    $modifiers_mul_id_array = isset($item->modifiers_mul_id) && ($item->modifiers_mul_id!="")?explode(",",$item->modifiers_mul_id):null;
+                    /*end_new_added_zak*/
+                    $modifier_price_array = isset($item->modifiers_price) && ($item->modifiers_price!="")?explode(",",$item->modifiers_price):null;
+                    $modifier_vat_array = (isset($item->modifier_vat) && $item->modifier_vat!="")?explode("|||",$item->modifier_vat):null;
+                    if(!empty($modifier_id_array)>0){
+                        $i = 0;
+                        foreach($modifier_id_array as $key1=>$single_modifier_id){
+                            $modifiers_mul_id_array_value = isset($modifiers_mul_id_array[$key1]) && $modifiers_mul_id_array[$key1]?explode('_',$modifiers_mul_id_array[$key1]):'';
+
+                            $modifier_data = array();
+                            $modifier_data['modifier_id'] =$single_modifier_id;
+                            $modifier_data['modifier_price'] = $modifier_price_array[$i];
+                            $modifier_data['food_menu_id'] = $item->food_menu_id;
+                            $modifier_data['sales_id'] = $sales_id;
+                            $modifier_data['sales_details_id'] = $sales_details_id;
+                            $modifier_data['menu_taxes'] = isset($modifier_vat_array[$key1]) && $modifier_vat_array[$key1]?$modifier_vat_array[$key1]:'';
+                            $modifier_data['user_id'] = $this->session->userdata('user_id');
+                            $modifier_data['outlet_id'] = $this->session->userdata('outlet_id');
+                            $modifier_data['customer_id'] =$order_details->customer_id;
+                            $this->db->insert('tbl_sales_details_modifiers', $modifier_data);
+
+                            $modifier_ingredients = $this->db->query("SELECT * FROM tbl_modifier_ingredients WHERE modifier_id=$single_modifier_id")->result();
+
+                            foreach($modifier_ingredients as $single_ingredient){
+                                $data_sale_consumptions_detail = array();
+                                $data_sale_consumptions_detail['ingredient_id'] = $single_ingredient->ingredient_id;
+                                $data_sale_consumptions_detail['consumption'] = $item->qty*$single_ingredient->consumption;
+                                $data_sale_consumptions_detail['sale_consumption_id'] = $sale_consumption_id;
+                                $data_sale_consumptions_detail['sales_id'] = $sales_id;
+                                $data_sale_consumptions_detail['food_menu_id'] = $item->food_menu_id;
+                                $data_sale_consumptions_detail['user_id'] = $this->session->userdata('user_id');
+                                $data_sale_consumptions_detail['outlet_id'] = $this->session->userdata('outlet_id');
+                                $data_sale_consumptions_detail['del_status'] = 'Live';
+                                $this->db->insert('tbl_sale_consumptions_of_modifiers_of_menus',$data_sale_consumptions_detail);
+                            }
+                            $i++;
+                        }
                     }
                 }
             }
